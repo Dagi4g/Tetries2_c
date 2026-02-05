@@ -1,4 +1,7 @@
 #include "board.h"
+#include <ncurses.h>
+#include <unistd.h>
+
 
 static Cell board[BOARD_HEIGHT][BOARD_WIDTH];
 
@@ -33,4 +36,8 @@ void board_init(void) {
 
 CellType board_get(int y, int x) {
     return board[y][x].type;
+}
+
+void board_set(int y, int x, CellType type) {
+    board[y][x].type = type;
 }
