@@ -22,11 +22,14 @@ int animate_board(Piece *p){
         refresh();
 
         usleep(200000);  // 200 ms
-        board_set(p->y, p->x, EMPTY);   // erase old
+        if (board_get(p->y+1,p->x ) == EMPTY){
+			board_set(p->y, p->x, EMPTY);   // erase old
+			}
         p->y++;
    
 	return 0;
 }
+
 
 
 int main(void) {
@@ -42,15 +45,16 @@ int main(void) {
 
 
     while (1){
-	    while (block.y < BOARD_HEIGHT-1){
+	    while (board_get(block.y,block.x)==EMPTY){
 		    char ch = getch();
 		    if (ch == 'j'){
-			    if (block.x > 1){
+			    if (board_get(block.y,block.x-1)==EMPTY){
 			    block.x --;
 		    }
 		    }
 		    if (ch == 'k'){
-			    if (block.x < BOARD_WIDTH - 2){
+			    if (board_get(block.y,block.x+1)==EMPTY){
+
 				    block.x ++;
 			    }
 		    }
