@@ -49,4 +49,4 @@ This project is meant as a learning tool for C and low-level programming, so all
 
 ## License
 
-MIT License
+[MIT license](LICENSES)
