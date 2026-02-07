@@ -35,15 +35,27 @@ The game currently features:
 ---
 
 ## Usage
+fork and clone the repository 
+```bash
+git clone https://github.com/<your user name>/Tetries2_c.git
 
-*(Fill this section with basic usage instructions later, e.g., how to run the game and controls.)*
+cd Tetries2_c
+
+clang src/main.c src/board/board.c src/renderer/board_render.c -lncurses -o main
+
+#run
+
+./main
+
+```
+
 
 ---
 
 ## Contributing
 
 Feel free to fork the repo and submit pull requests.  
-This project is meant as a learning tool for C and low-level programming, so all contributions to improve understanding are welcome.
+This project is meant as a learning tool for C and low-level programming, so all contribution<your
 
 ---
 
