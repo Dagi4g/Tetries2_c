@@ -18,9 +18,6 @@ typedef struct {
 /* board API */
 void board_init(void);
 CellType board_get(int y, int x);
-void animate_board(void);
-void drop_block(int y);
-void clear_block(int y);
 void board_set(int y, int x, CellType type);
 
 #endif

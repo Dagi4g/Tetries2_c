@@ -4,6 +4,30 @@
 #include "renderer/board_render.h"
 #include "config.h"
 
+typedef struct {
+	int x ;
+	int y ;
+}Piece;
+
+void piece_init(Piece *p){
+	p->x = BOARD_WIDTH/ 2;
+	p->y = 1;
+}
+
+int animate_board(Piece *p){
+        board_set(p->y, p->x, BLOCK);   // draw new
+
+        clear();
+        renderer_draw_board();
+        refresh();
+
+        usleep(200000);  // 200 ms
+        board_set(p->y, p->x, EMPTY);   // erase old
+        p->y++;
+   
+	return 0;
+}
+
 
 int main(void) {
     initscr();
@@ -13,20 +37,31 @@ int main(void) {
     keypad(stdscr, TRUE);
 
     board_init();
+    Piece block;
+    piece_init(&block);
 
-    int x = BOARD_WIDTH / 2;
-    int y = 1;
 
-    while (y < BOARD_HEIGHT - 1) {
-        board_set(y, x, EMPTY);   // erase old
-        y++;
-        board_set(y, x, BLOCK);   // draw new
+    while (1){
+	    while (block.y < BOARD_HEIGHT-1){
+		    char ch = getch();
+		    if (ch == 'j'){
+			    if (block.x > 1){
+			    block.x --;
+		    }
+		    }
+		    if (ch == 'k'){
+			    if (block.x < BOARD_WIDTH - 2){
+				    block.x ++;
+			    }
+		    }
+		    if (ch == 'n'){
+			    block.y = BOARD_HEIGHT-2;
+		    }
 
-        clear();
-        renderer_draw_board();
-        refresh();
+		    animate_board(&block);
+	    }
+	    piece_init(&block);
 
-        usleep(200000);  // 200 ms
     }
 
     getch();
