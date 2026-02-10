@@ -1,13 +1,10 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include "board/board.h"
+#include "pieces/piece.h"
 #include "renderer/board_render.h"
 #include "config.h"
 
-typedef struct {
-    int x;
-    int y;
-} Piece;
 
 typedef enum {
     MOVE_LEFT,
@@ -16,20 +13,64 @@ typedef enum {
 } Move;
 
 void piece_init(Piece *p) {
-    p->x = BOARD_WIDTH / 2;
+    p->x = BOARD_WIDTH / 2 - 4;
     p->y = 1;
+}
+
+int can_move_right(Piece *p) {
+    for (int row = 0; row < PIECE_SIZE; row++) {
+        for (int col = PIECE_SIZE-1; col >= 0; col--) {
+            if (p->shape[row][col] == BLOCK) {
+                int board_x = p->x + col + 1;
+                int board_y = p->y + row;
+                if (board_x >= BOARD_WIDTH || board_get(board_y,board_x) != EMPTY)
+                    return 0;
+                break;
+            }
+        }
+    }
+    return 1;
+}
+
+int can_move_left(Piece *p) {
+    for (int row = 0; row < PIECE_SIZE; row++) {
+        for (int col = 0; col < PIECE_SIZE; col++) {
+            if (p->shape[row][col] == BLOCK) {
+                int board_x = p->x + col - 1; // left neighbor
+                int board_y = p->y + row;
+                if (board_x < 0 || board_get(board_y,board_x) != EMPTY)
+                    return 0; // cannot move left
+                break; // stop after first block in this row
+            }
+        }
+    }
+    return 1; // can move left
+}
+int can_move_down(Piece *p) {
+    for (int col = 0; col < PIECE_SIZE; col++) {
+        for (int row = PIECE_SIZE-1; row >= 0; row--) {
+            if (p->shape[row][col] == BLOCK) {
+                int board_x = p->x + col;
+                int board_y = p->y + row + 1;
+                if (board_y >= BOARD_HEIGHT || board_get(board_y,board_x) != EMPTY)
+                    return 0;
+                break;
+            }
+        }
+    }
+    return 1;
 }
 
 int can_move(Piece *p, Move move) {
     switch (move) {
         case MOVE_LEFT:
-            return board_get(p->y, p->x - 1) == EMPTY;
+            return can_move_left(p);
 
         case MOVE_RIGHT:
-            return board_get(p->y, p->x + 1) == EMPTY;
+            return can_move_right(p);
 
         case MOVE_DOWN:
-            return board_get(p->y + 1, p->x) == EMPTY;
+            return can_move_down(p);
     }
     return 0;
 }
@@ -63,11 +104,11 @@ void apply_move(Piece *p, Move move) {
 
     switch (move) {
         case MOVE_LEFT:
-            p->x--;
+            p->x -= 1;
             break;
 
         case MOVE_RIGHT:
-            p->x++;
+            p->x += 1;
             break;
 
         case MOVE_DOWN:
@@ -75,29 +116,86 @@ void apply_move(Piece *p, Move move) {
             break;
     }
 }
-void draw_frame(Piece *p) {
-    clear();
-    board_set(p->y, p->x, BLOCK);
+
+void draw_piece_temp(Piece *p) {
+    clear(); // clear screen
+
+    // Temporarily draw the piece on top of the board
+    for (int row = 0; row < PIECE_SIZE; row++) {
+        for (int col = 0; col < PIECE_SIZE; col++) {
+            if (p->shape[row][col] == BLOCK) {
+                int board_y = p->y + row;
+                int board_x = p->x + col;
+
+                // make sure we don't go out of bounds
+                if (board_y >= 0 && board_y < BOARD_HEIGHT &&
+                    board_x >= 0 && board_x < BOARD_WIDTH) {
+                    board_set(board_y, board_x, BLOCK);
+                }
+            }
+        }
+    }
+
+    // Draw the board with the temporary piece
     renderer_draw_board();
-    board_set(p->y, p->x, EMPTY); // remove temp draw
-    refresh();
+
+    // Remove the temporary piece
+    for (int row = 0; row < PIECE_SIZE; row++) {
+        for (int col = 0; col < PIECE_SIZE; col++) {
+            if (p->shape[row][col] == BLOCK) {
+                int board_y = p->y + row;
+                int board_x = p->x + col;
+
+                if (board_y >= 0 && board_y < BOARD_HEIGHT &&
+                    board_x >= 0 && board_x < BOARD_WIDTH) {
+                    board_set(board_y, board_x, EMPTY);
+                }
+            }
+        }
+    }
+
+    refresh(); // show frame
 }
 
 void lock_piece(Piece *p) {
-    board_set(p->y, p->x, BLOCK);
+    for (int row = 0; row < PIECE_SIZE; row++) {
+        for (int col = 0; col < PIECE_SIZE; col++) {
+            if (p->shape[row][col] == BLOCK) {
+                int board_y = p->y + row;
+                int board_x = p->x + col;
+
+                // Make sure we stay inside the board
+                if (board_y >= 0 && board_y < BOARD_HEIGHT &&
+                    board_x >= 0 && board_x < BOARD_WIDTH) {
+                    board_set(board_y, board_x, BLOCK);
+                }
+            }
+        }
+    }
 }
 
 int main(void) {
+
     initscr();
+    start_color();        // enable color functionality
+    use_default_colors(); // optional: allow transparency with terminal background
+ 
+    // Define color pairs: pair_number, foreground, background
+    init_pair(1, COLOR_WHITE, -1);   // EMPTY
+    init_pair(2, COLOR_CYAN, -1);    // BLOCK
+    init_pair(3, COLOR_YELLOW, -1);  // WALL
+    init_pair(4, COLOR_GREEN, -1);   // FLOOR
+    init_pair(5, COLOR_MAGENTA, -1); // CORNER
+
     noecho();
     curs_set(0);
     nodelay(stdscr, TRUE);
-    keypad(stdscr, TRUE);
-
+    keypad(stdscr, TRUE); 
     board_init();
 
-    Piece block;
-    piece_init(&block);
+    pieces_init_random();
+    Piece block = spawn_random_piece();
+
 
     while (1) {
         /* ---------- INPUT ---------- */
@@ -123,12 +221,12 @@ int main(void) {
 			y++; // re-check same row index
 		    }
 		}
-	    piece_init(&block);
+	    block = spawn_random_piece();
 	}
         /* ---------- RENDER ---------- */
-        draw_frame(&block);
+        draw_piece_temp(&block);
 
-        usleep(200000); // 200 ms per frame
+        usleep(500000); // 200 ms per frame
     }
 
     endwin();
