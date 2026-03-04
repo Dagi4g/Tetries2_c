@@ -12,17 +12,13 @@ typedef enum {
     MOVE_DOWN
 } Move;
 
-void piece_init(Piece *p) {
-    p->x = BOARD_WIDTH / 2 - 4;
-    p->y = 1;
-}
 
-int can_move_right(Piece *p) {
+int can_it_move(Piece *p,int dx,int dy) {
     for (int row = 0; row < PIECE_SIZE; row++) {
-        for (int col = PIECE_SIZE-1; col >= 0; col--) {
+        for (int col = 0; col <= PIECE_SIZE-1; col++) {
             if (p->shape[row][col] == BLOCK) {
-                int board_x = p->x + col + 1;
-                int board_y = p->y + row;
+                int board_x = p->x + col + dx;
+                int board_y = p->y + row + dy;
                 if (board_x >= BOARD_WIDTH || board_get(board_y,board_x) != EMPTY)
                     return 0;
                 break;
@@ -32,45 +28,19 @@ int can_move_right(Piece *p) {
     return 1;
 }
 
-int can_move_left(Piece *p) {
-    for (int row = 0; row < PIECE_SIZE; row++) {
-        for (int col = 0; col < PIECE_SIZE; col++) {
-            if (p->shape[row][col] == BLOCK) {
-                int board_x = p->x + col - 1; // left neighbor
-                int board_y = p->y + row;
-                if (board_x < 0 || board_get(board_y,board_x) != EMPTY)
-                    return 0; // cannot move left
-                break; // stop after first block in this row
-            }
-        }
-    }
-    return 1; // can move left
-}
-int can_move_down(Piece *p) {
-    for (int col = 0; col < PIECE_SIZE; col++) {
-        for (int row = PIECE_SIZE-1; row >= 0; row--) {
-            if (p->shape[row][col] == BLOCK) {
-                int board_x = p->x + col;
-                int board_y = p->y + row + 1;
-                if (board_y >= BOARD_HEIGHT || board_get(board_y,board_x) != EMPTY)
-                    return 0;
-                break;
-            }
-        }
-    }
-    return 1;
-}
+
+
 
 int can_move(Piece *p, Move move) {
     switch (move) {
         case MOVE_LEFT:
-            return can_move_left(p);
+            return can_it_move(p,-1,0);
 
         case MOVE_RIGHT:
-            return can_move_right(p);
+            return can_it_move(p,1 ,0);
 
         case MOVE_DOWN:
-            return can_move_down(p);
+            return can_it_move(p,0,1);
     }
     return 0;
 }
@@ -84,11 +54,11 @@ bool row_is_full(int y) {
 }
 
 void clear_row(int y) {
-    for (int x = 0; x < BOARD_WIDTH; x++)
+    for (int x = 1; x < BOARD_WIDTH; x++)
         board_set(y, x, EMPTY);
 }
 void shift_rows_down(int from_y) {
-    for (int y = from_y; y > 0; y--) {
+    for (int y = from_y; y > 1; y--) {
         for (int x = 0; x < BOARD_WIDTH; x++) {
             board_set(y, x, board_get(y - 1, x));
         }
@@ -96,7 +66,7 @@ void shift_rows_down(int from_y) {
 
     // clear top row
     for (int x = 0; x < BOARD_WIDTH; x++)
-        board_set(0, x, EMPTY);
+        board_set(1, x, EMPTY);
 }
 
 void apply_move(Piece *p, Move move) {
@@ -112,7 +82,7 @@ void apply_move(Piece *p, Move move) {
             break;
 
         case MOVE_DOWN:
-            p->y++;
+            p->y--;
             break;
     }
 }
@@ -182,7 +152,7 @@ int main(void) {
  
     // Define color pairs: pair_number, foreground, background
     init_pair(1, COLOR_WHITE, -1);   // EMPTY
-    init_pair(2, COLOR_CYAN, -1);    // BLOCK
+    init_pair(2, COLOR_RED, -1);    // BLOCK
     init_pair(3, COLOR_YELLOW, -1);  // WALL
     init_pair(4, COLOR_GREEN, -1);   // FLOOR
     init_pair(5, COLOR_MAGENTA, -1); // CORNER
@@ -195,26 +165,34 @@ int main(void) {
 
     pieces_init_random();
     Piece block = spawn_random_piece();
-
-
+    int ch;
     while (1) {
-        /* ---------- INPUT ---------- */
-	int ch = getch();
-	if (ch == 'j') apply_move(&block, MOVE_LEFT);
-	if (ch == 'k') apply_move(&block, MOVE_RIGHT);
 
-	if (ch == 'n') {
-	    while (can_move(&block, MOVE_DOWN)) {
-		apply_move(&block, MOVE_DOWN);
-	    }
-	}
         /* ---------- GRAVITY ---------- */
 
+	/* ---------- INPUT ---------- */
+	while ((ch = getch())!= EOF){
+		switch (ch){
+		case 'j':
+			apply_move(&block, MOVE_LEFT);
+			break;
+		case 'k':
+			apply_move(&block, MOVE_RIGHT);
+			break ;
+		case 'n': {
+		    while (can_move(&block, MOVE_DOWN)) {
+			apply_move(&block, MOVE_DOWN);
+		    }
+			  }
+	}
+	}
 	if (can_move(&block, MOVE_DOWN)) {
-	    apply_move(&block, MOVE_DOWN);
-	} else {
+		apply_move(&block, MOVE_DOWN);
+		renderer_draw_board();
+	}
+	else {
 	    lock_piece(&block);
-	    for (int y = BOARD_HEIGHT - 2; y >= 1; y--) {
+	    for (int y = 1; y < BOARD_HEIGHT - 2; y++) {
 		    if (row_is_full(y)) {
 			clear_row(y);
 			shift_rows_down(y);
@@ -231,4 +209,5 @@ int main(void) {
 
     endwin();
     return 0;
-}
+    }
+

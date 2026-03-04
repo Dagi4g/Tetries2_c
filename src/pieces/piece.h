@@ -10,22 +10,18 @@ typedef struct {
     int y;
     CellType shape[PIECE_SIZE][PIECE_SIZE];
 } Piece;
-
-// extern declarations
-extern Piece o_piece;
-extern Piece i_piece;
-extern Piece t_piece;
-extern Piece l_piece;
-extern Piece j_piece;
-extern Piece s_piece;
-extern Piece z_piece;
-
-// optional: array of all pieces
-extern Piece all_pieces[7];
-// initialize RNG for random pieces
 void pieces_init_random(void);
-
-// spawn a random piece
 Piece spawn_random_piece(void);
 
-#endif // PIECES_H
+// Functions to create each piece
+static void piece_set_position(Piece *p);
+Piece create_o_piece(void);
+Piece create_i_piece(void);
+Piece create_t_piece(void);
+Piece create_l_piece(void);
+Piece create_j_piece(void);
+Piece create_s_piece(void);
+Piece create_z_piece(void);
+
+#endif
+
