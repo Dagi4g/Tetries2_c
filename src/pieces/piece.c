@@ -117,7 +117,7 @@ void pieces_init_random(void) {
 
 // Spawn a random piece at runtime
 Piece spawn_random_piece(void) {
-    int index = rand()%(7) + 1;
+    int index = 1;
     switch(index) {
         case 0: return create_o_piece();
         case 1: return create_i_piece();
