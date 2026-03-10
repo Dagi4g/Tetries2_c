@@ -5,17 +5,6 @@
 #include "renderer/board_render.h"
 #include "config.h"
 
-void log_message(const char *filename, const char *message){
-	FILE *file = fopen(filename, "a");
-
-	if (filename == NULL){
-		printf("canot open file %s",filename);
-		return;
-	}
-	fprintf(file,"%s\n",message);
-	fclose(file);
-}
-
 typedef enum {
     MOVE_LEFT,
     MOVE_RIGHT,
@@ -73,17 +62,12 @@ void shift_rows_up(int from_y) {
     for (int y = from_y; y < BOARD_HEIGHT ; y++) {
         for (int x = 1; x < BOARD_WIDTH ; x++) {
 		if (board_get(y+1,x ) == BLOCK){
-			sprintf(message, "original block (%d,%d) shifted to (%d,%d) ",x,y,x,y-1);
-			log_message("shifting.log",message);
-			board_set(y, x, board_get(y + 1, x));
+			board_set(y, x, board_get(y+1, x));
+			board_set(y+1,x, EMPTY);
 		}
         }
     }
 
-    // clear top row
-    //for (int x = BOARD_WIDTH-1; x > 1 ; x--){
-       // board_set(1, x, EMPTY);
-    //	}
 }
 
 void apply_move(Piece *p, Move move) {
@@ -228,9 +212,6 @@ int main(void) {
                 for (int y = 1; y < BOARD_HEIGHT - 1; y++) {
                     while (row_is_full(y)) {
                         clear_row(y);
-			char round[20];
-			sprintf(round,"round %d",y);
-			log_message("shifting.log",round);
                         shift_rows_up(y);
                     }
                 }
