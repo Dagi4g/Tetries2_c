@@ -58,17 +58,18 @@ void clear_row(int y) {
 
 }
 void shift_rows_up(int from_y) {
-	char message[100];
     for (int y = from_y; y < BOARD_HEIGHT ; y++) {
         for (int x = 1; x < BOARD_WIDTH ; x++) {
 		if (board_get(y+1,x ) == BLOCK){
 			board_set(y, x, board_get(y+1, x));
+			//clear the block after shifting from the previous cell.
 			board_set(y+1,x, EMPTY);
 		}
         }
     }
 
 }
+
 
 void apply_move(Piece *p, Move move) {
     if (!can_move(p, move)) return;
@@ -144,6 +145,27 @@ void lock_piece(Piece *p) {
     }
 }
 
+void rotate(Piece *p) {
+    int temp[PIECE_SIZE][PIECE_SIZE];
+
+    // Your exact logic: "column = 3-row and row = column"
+    // Which translates to: temp[row][col] = old[3-col][row]
+    for (int row = 0; row < PIECE_SIZE; row++) {
+        for (int col = 0; col < PIECE_SIZE; col++) {
+            // This is the direct translation of your description
+            temp[row][col] = p->shape[PIECE_SIZE - 1 - col][row];
+        }
+    }
+
+    // Copy back
+    for (int i = 0; i < PIECE_SIZE; i++) {
+        for (int j = 0; j < PIECE_SIZE; j++) {
+            p->shape[i][j] = temp[i][j];
+        }
+    }
+}
+			
+
 int main(void) {
     initscr();
     start_color();
@@ -196,6 +218,10 @@ int main(void) {
                 case 'q':  // Add quit option
                     endwin();
                     return 0;
+		case 'r' :
+		    rotate(&block);
+		    break;
+
             }
         }
         
@@ -231,7 +257,7 @@ int main(void) {
             need_render = 0;
         }
         
-        usleep(50000);  // 50ms = 20 FPS (more responsive)
+        usleep(70000);  // 50ms = 20 FPS (more responsive)
     }
     
     endwin();
