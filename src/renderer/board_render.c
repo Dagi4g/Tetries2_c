@@ -2,17 +2,7 @@
 #include "../board/board.h"
 #include "board_render.h"
 
-// Map CellType to ncurses color pair
-static int color_for(CellType type) {
-    switch(type) {
-        case EMPTY:  return 1;
-        case BLOCK:  return 2;
-        case WALL:   return 3;
-        case FLOOR:  return 4;
-        case CORNER: return 5;
-        default:     return 1;
-    }
-}
+
 
 // Map CellType to glyph
 static char glyph_for(CellType type) {
@@ -29,10 +19,12 @@ static char glyph_for(CellType type) {
 void renderer_draw_board(void) {
     for (int y = 0; y < BOARD_HEIGHT; y++) {
         for (int x = 0; x < BOARD_WIDTH; x++) {
-            CellType type = board_get(y, x);
-            attron(COLOR_PAIR(color_for(type))); // enable color
+
+            int color = get_color(y,x);
+	    CellType type = board_get(y,x);
+            attron(COLOR_PAIR(color)); // enable color
             mvaddch(y, x, glyph_for(type));
-            attroff(COLOR_PAIR(color_for(type))); // disable color
+            attroff(COLOR_PAIR(color)); // disable color
         }
     }
 }

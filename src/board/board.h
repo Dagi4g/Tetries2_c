@@ -13,11 +13,14 @@ typedef enum {
 
 typedef struct {
     CellType type;
+    int color;
 } Cell;
 
 /* board API */
 void board_init(void);
 CellType board_get(int y, int x);
-void board_set(int y, int x, CellType type);
+void board_set(int y, int x, CellType type, int color);
+int get_color(int y,int x);
+
 
 #endif

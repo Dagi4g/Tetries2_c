@@ -53,7 +53,7 @@ bool row_is_full(int y) {
 
 void clear_row(int y) {
     for (int x = 1; x < BOARD_WIDTH - 1; x++){
-		board_set(y, x, EMPTY);
+		board_set(y, x, EMPTY, 0);
     }
 
 }
@@ -61,9 +61,9 @@ void shift_rows_up(int from_y) {
     for (int y = from_y; y < BOARD_HEIGHT ; y++) {
         for (int x = 1; x < BOARD_WIDTH ; x++) {
 		if (board_get(y+1,x ) == BLOCK){
-			board_set(y, x, board_get(y+1, x));
+			board_set(y, x, board_get(y+1, x),get_color(y+1,x));
 			//clear the block after shifting from the previous cell.
-			board_set(y+1,x, EMPTY);
+			board_set(y+1,x, EMPTY,0);
 		}
         }
     }
@@ -101,7 +101,7 @@ void draw_piece_temp(Piece *p) {
 
                 // make sure we don't go out of bounds
                 if (board_get(board_y,board_x) == EMPTY) {
-                    board_set(board_y, board_x, BLOCK);
+                    board_set(board_y, board_x, BLOCK,p->color);
                 }
             }
         }
@@ -119,7 +119,7 @@ void draw_piece_temp(Piece *p) {
 
 
 		if (board_get(board_y,board_x) == BLOCK ) {
-                    board_set(board_y, board_x, EMPTY);
+                    board_set(board_y, board_x, EMPTY,0);
                 }
             }
         }
@@ -138,45 +138,32 @@ void lock_piece(Piece *p) {
                 // Make sure we stay inside the board
                 if (board_y >= 0 && board_y < BOARD_HEIGHT &&
                     board_x >= 0 && board_x < BOARD_WIDTH) {
-                    board_set(board_y, board_x, BLOCK);
+                    board_set(board_y, board_x, BLOCK,p->color);
                 }
             }
         }
     }
 }
 
-void rotate(Piece *p) {
-    int temp[PIECE_SIZE][PIECE_SIZE];
-
-    // Your exact logic: "column = 3-row and row = column"
-    // Which translates to: temp[row][col] = old[3-col][row]
-    for (int row = 0; row < PIECE_SIZE; row++) {
-        for (int col = 0; col < PIECE_SIZE; col++) {
-            // This is the direct translation of your description
-            temp[row][col] = p->shape[PIECE_SIZE - 1 - col][row];
-        }
-    }
-
-    // Copy back
-    for (int i = 0; i < PIECE_SIZE; i++) {
-        for (int j = 0; j < PIECE_SIZE; j++) {
-            p->shape[i][j] = temp[i][j];
-        }
-    }
-}
-			
 
 int main(void) {
     initscr();
+    
     start_color();
-    use_default_colors();
-    
-    init_pair(1, COLOR_WHITE, -1);
-    init_pair(2, COLOR_RED, -1);
-    init_pair(3, COLOR_YELLOW, -1);
-    init_pair(4, COLOR_GREEN, -1);
-    init_pair(5, COLOR_MAGENTA, -1);
-    
+
+    init_pair(1, COLOR_YELLOW,  COLOR_BLACK); // O
+    init_pair(2, COLOR_CYAN,    COLOR_BLACK); // I
+
+    init_pair(3, COLOR_MAGENTA, COLOR_BLACK); // T
+
+    init_pair(4, COLOR_BLUE,    COLOR_BLACK); // L
+
+    init_pair(5, COLOR_WHITE,   COLOR_BLACK); // J
+
+    init_pair(6, COLOR_GREEN,   COLOR_BLACK); // S
+
+    init_pair(7, COLOR_RED,     COLOR_BLACK); // Z
+
     noecho();
     curs_set(0);
     nodelay(stdscr, TRUE);

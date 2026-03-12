@@ -8,9 +8,11 @@
 typedef struct {
     int x;
     int y;
+    int color;
     CellType shape[PIECE_SIZE][PIECE_SIZE];
 } Piece;
 void pieces_init_random(void);
+void rotate(Piece *p);
 Piece spawn_random_piece(void);
 
 // Functions to create each piece

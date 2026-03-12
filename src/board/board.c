@@ -10,6 +10,7 @@ void board_init(void) {
     for (int y = 0; y < BOARD_HEIGHT; y++) {
         for (int x = 0; x < BOARD_WIDTH; x++) {
             board[y][x].type = EMPTY;
+	    board[y][x].color = 0;
         }
     }
     for (int x = 0; x < BOARD_WIDTH; x++){
@@ -38,6 +39,11 @@ CellType board_get(int y, int x) {
     return board[y][x].type;
 }
 
-void board_set(int y, int x, CellType type) {
+void board_set(int y, int x, CellType type, int color) {
     board[y][x].type = type;
+    board[y][x].color = color;
+}
+
+int get_color(int y, int x){
+	return board[y][x].color;
 }
